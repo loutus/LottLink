@@ -40,10 +40,6 @@ contract RegisterNFU is NFU, UserData {
 
     /**
      * @dev Sign in the Register contract by adopting a `username` and optional info.
-     *
-     * pure sign fee is more than usual sign.
-     * Users can sign in usual by using `_` in the first character of `username`.
-     * new user can introduce a string username as `presenter`.
      * 
      * Requirements:
      *
