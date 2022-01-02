@@ -13,17 +13,18 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "./NFU.sol";
+import "./IdCard.sol";
 import "./UserData.sol";
+import "../ContData/ContDataCall.sol";
 
-contract RegisterNFU is NFU, UserData {
+contract Register is IdCard, UserData, ContDataCall {
     using CountersUpgradeable for CountersUpgradeable.Counter;
     CountersUpgradeable.Counter private _userIdCounter;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
     function initialize() initializer public {
-        __ERC721_init("NonFungibleUser", "NFU");
+        __ERC721_init("IdCard", "IDC");
         __ERC721URIStorage_init();
         __Pausable_init();
         __Ownable_init();
@@ -48,7 +49,7 @@ contract RegisterNFU is NFU, UserData {
         string memory presenter,
         string memory uri
     ) external payable {
-        require(bytes(username).length >= 3, "lesser than 3 literals");
+        require(bytes(username).length > 0, "empty username");
         require(msg.value >= calculateFee(username));
 
         _userIdCounter.increment();
@@ -58,6 +59,11 @@ contract RegisterNFU is NFU, UserData {
         _setTokenURI(userId, uri);
 
         _setProfile(userId, username, infoHash, presenter);
+    }
+
+
+    function calculateFee(string memory input) internal view returns(uint256){
+        return ContDataGetUint(keccak256("RegisterBaseFee")) / 10 ** (bytes(input).length);
     }
 
     function version() public pure returns(string memory V_) {

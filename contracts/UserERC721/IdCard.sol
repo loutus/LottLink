@@ -9,7 +9,14 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721Burnab
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 
-contract NFU is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeable, PausableUpgradeable, OwnableUpgradeable, ERC721BurnableUpgradeable {
+contract IdCard is
+    Initializable,
+    ERC721Upgradeable,
+    ERC721URIStorageUpgradeable,
+    PausableUpgradeable,
+    OwnableUpgradeable,
+    ERC721BurnableUpgradeable
+{
 
     function pause() public onlyOwner {
         _pause();
@@ -25,12 +32,12 @@ contract NFU is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeable, P
         override
     {
         super._beforeTokenTransfer(from, to, tokenId);
-        require(!registered(to), "the user has signed in before");
+        require(!registered(to), "the Card has signed in before");
     }
 
     // The following functions are overrides required by Solidity.
-    
-    mapping(address => uint256) addrToUserId;
+
+    mapping(address => uint256) addrToCardId;
 
     function _afterTokenTransfer(
         address from,
@@ -41,8 +48,8 @@ contract NFU is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeable, P
         override
     {
         super._afterTokenTransfer(from, to, tokenId);
-        addrToUserId[to] = addrToUserId[from];
-        delete addrToUserId[from];
+        addrToCardId[to] = addrToCardId[from];
+        delete addrToCardId[from];
     }
 
     function _burn(uint256 tokenId)
@@ -65,14 +72,7 @@ contract NFU is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeable, P
 
 
 
-    function registered(address userAddr)public view returns(bool){
-        return(balanceOf(userAddr) != 0);
-    }
-
-
-
-    uint256 _baseFee = 10000 * 10 ** 18;
-    function calculateFee(string memory input) internal view returns(uint256){
-        return _baseFee / 10 ** (bytes(input).length);
+    function registered(address CardAddr)public view returns(bool){
+        return(balanceOf(CardAddr) != 0);
     }
 }
