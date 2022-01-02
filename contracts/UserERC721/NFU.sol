@@ -29,6 +29,21 @@ contract NFU is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeable, P
     }
 
     // The following functions are overrides required by Solidity.
+    
+    mapping(address => uint256) addrToUserId;
+
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    )
+        internal
+        override
+    {
+        super._afterTokenTransfer(from, to, tokenId);
+        addrToUserId[to] = addrToUserId[from];
+        delete addrToUserId[from];
+    }
 
     function _burn(uint256 tokenId)
         internal
@@ -53,10 +68,11 @@ contract NFU is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeable, P
     function registered(address userAddr)public view returns(bool){
         return(balanceOf(userAddr) != 0);
     }
-    modifier ownerOrUser() {
-        if(msg.sender == owner()){_;}
-        else if(registered(msg.sender)){
-            _;
-        }
+
+
+
+    uint256 _baseFee = 10000 * 10 ** 18;
+    function calculateFee(string memory input) internal view returns(uint256){
+        return _baseFee / 10 ** (bytes(input).length);
     }
 }

@@ -5,19 +5,28 @@ import "../utils/StringUtil.sol";
 
 abstract contract UserData {
 
+
     using StringUtil for string;
 
-    mapping(string => bool) usernamesTaken;
-
-    function hasTaken(string memory username) public view returns(bool){
-        return usernamesTaken[username.lower()];
+    mapping(string => uint256) usernameToUserId;
+    /**
+     * @dev Returns the userId of the `_username`.
+     */
+    function userId(string memory _username) public view returns(uint256){
+        return usernameToUserId[_username.lower()];
     }
     /**
-     * @dev assign the `username` to a `userAddr`. (restricted function)
+     * @dev Returns true if the `username` has been registered before.
      */
-    function _takeUsername(string memory username) internal {
-        require(!hasTaken(username), "This username has been taken before");
-        usernamesTaken[username.lower()] = true;
+    function registered(string memory _username) public view returns(bool){
+        return userId(_username) != 0;
+    }
+    /**
+     * @dev assign the `username` to an `NFU`.
+     */
+    function _takeUsername(string memory _username, uint256 _userId) internal {
+        require(!registered(_username), "This username has been taken before");
+        usernameToUserId[_username.lower()] = _userId;
     }
 
 
@@ -25,23 +34,38 @@ abstract contract UserData {
     struct User {
         string username;
         string infoHash;
+        string presenter;
     }
 
     mapping(uint256 => User) users;
 
-
-    function _setUserData(
-        uint256 userId, 
-        string memory username, 
-        string memory infoHash
+    /**
+     * @dev create the profile of the user.
+     */
+    function _setProfile(
+        uint256 _userId, 
+        string memory _username, 
+        string memory _infoHash,
+        string memory _presenter
     ) internal {
-        _takeUsername(username);
-        users[userId] = User(username, infoHash);
-    } 
-
-
-    function _burnUserData(uint256 userId) internal {
-        delete users[userId];
-        delete usernamesTaken[users[userId].username];
+        _takeUsername(_username, _userId);
+        users[_userId] = User(_username, _infoHash, _presenter);
+        emit NewUser(_userId, _username, _infoHash, _presenter);
+    }
+    /**
+     * @dev emit when a new user signs in.
+     */
+    event NewUser(uint256 _userId, string _username, string _infoHash, string _presenter);
+    /**
+     * @dev User profile is visible using `_userId` or `_username`.
+     */ 
+    function username(uint256 _userId) public view returns(string memory) {
+        return users[_userId].username;
+    }
+    function userProfile(uint256 _userId) public view returns(User memory) {
+        return users[_userId];
+    }
+    function userProfile(string memory _username) public view returns(User memory) {
+        return users[userId(_username)];
     }
 }

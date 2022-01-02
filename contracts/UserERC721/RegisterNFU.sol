@@ -33,11 +33,6 @@ contract RegisterNFU is NFU, UserData {
 
 
 
-    mapping(address => bool) presented;
-    function present(address addr) public ownerOrUser {
-        presented[addr] = true;
-    }
-
     /**
      * @dev Sign in the Register contract by adopting a `username` and optional info.
      * 
@@ -47,17 +42,25 @@ contract RegisterNFU is NFU, UserData {
      * - Not allowed empty usernames.
      * - User has to adopt a username not taken before.
      */
-    function signIn(string memory username, string memory infoHash, string memory uri) external payable {
-        require(presented[msg.sender], "you should be presented by the DAO or a user");
+    function signIn(
+        string memory username, 
+        string memory infoHash, 
+        string memory presenter,
+        string memory uri
+    ) external payable {
         require(bytes(username).length >= 3, "lesser than 3 literals");
+        require(msg.value >= calculateFee(username));
 
-        uint256 userId = _userIdCounter.current();
         _userIdCounter.increment();
+        uint256 userId = _userIdCounter.current();
         _safeMint(msg.sender, userId);
 
         _setTokenURI(userId, uri);
 
-        _setUserData(userId, username, infoHash);
+        _setProfile(userId, username, infoHash, presenter);
     }
 
+    function version() public pure returns(string memory V_) {
+        V_ = "1.1.0";
+    }
 }
