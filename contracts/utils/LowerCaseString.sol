@@ -11,7 +11,7 @@ pragma solidity ^0.8.7;
 //  ================ Open source smart contract on EVM =================
 //   =============== Verify Random Function by ChanLink ===============
 
-library StringUtil {
+library LowerCaseString {
 
     /**
      * Lower

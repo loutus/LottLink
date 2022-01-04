@@ -1,5 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.7;
+
+// ============================ VERSION_1.1.0 ==============================
+//   ██       ██████  ████████ ████████    ██      ██ ███    ██ ██   ██
+//   ██      ██    ██    ██       ██       ██      ██ ████   ██ ██  ██
+//   ██      ██    ██    ██       ██       ██      ██ ██ ██  ██ █████
+//   ██      ██    ██    ██       ██       ██      ██ ██  ██ ██ ██  ██
+//   ███████  ██████     ██       ██    ██ ███████ ██ ██   ████ ██   ██    
+// ======================================================================
+//  ================ Open source smart contract on EVM =================
+//   ============== Verify Random Function by ChainLink ===============
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
@@ -18,13 +28,17 @@ contract IdCard is
     ERC721BurnableUpgradeable
 {
 
-    function pause() public onlyOwner {
-        _pause();
+    function registered(address addr)public view returns(bool){
+        return(balanceOf(addr) != 0);
     }
 
-    function unpause() public onlyOwner {
-        _unpause();
+
+    mapping(address => uint256) addrToTokenId;
+
+    function cardId(address addr) public view returns(uint256) {
+        return addrToTokenId[addr];
     }
+
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
         internal
@@ -35,10 +49,6 @@ contract IdCard is
         require(!registered(to), "the Card has signed in before");
     }
 
-    // The following functions are overrides required by Solidity.
-
-    mapping(address => uint256) addrToCardId;
-
     function _afterTokenTransfer(
         address from,
         address to,
@@ -48,9 +58,19 @@ contract IdCard is
         override
     {
         super._afterTokenTransfer(from, to, tokenId);
-        addrToCardId[to] = addrToCardId[from];
-        delete addrToCardId[from];
+        addrToTokenId[to] = tokenId;
+        delete addrToTokenId[from];
     }
+
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
+    }
+
+    // The following functions are overrides required by Solidity.
 
     function _burn(uint256 tokenId)
         internal
@@ -66,13 +86,5 @@ contract IdCard is
         returns (string memory)
     {
         return super.tokenURI(tokenId);
-    }
-
-
-
-
-
-    function registered(address CardAddr)public view returns(bool){
-        return(balanceOf(CardAddr) != 0);
     }
 }

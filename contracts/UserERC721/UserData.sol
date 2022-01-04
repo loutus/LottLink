@@ -1,12 +1,26 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.7;
 
-import "../utils/StringUtil.sol";
+// ============================ VERSION_1.1.0 ==============================
+//   ██       ██████  ████████ ████████    ██      ██ ███    ██ ██   ██
+//   ██      ██    ██    ██       ██       ██      ██ ████   ██ ██  ██
+//   ██      ██    ██    ██       ██       ██      ██ ██ ██  ██ █████
+//   ██      ██    ██    ██       ██       ██      ██ ██  ██ ██ ██  ██
+//   ███████  ██████     ██       ██    ██ ███████ ██ ██   ████ ██   ██    
+// ======================================================================
+//  ================ Open source smart contract on EVM =================
+//   ============== Verify Random Function by ChainLink ===============
+
+import "../utils/LowerCaseString.sol";
+import "../utils/regex/LiteralRegex.sol";
+import "../utils/ConcatenateString.sol";
 
 abstract contract UserData {
 
+    using LowerCaseString for string;
+    using LiteralRegex for string;
+    using ConcatenateString for string;
 
-    using StringUtil for string;
 
     mapping(string => uint256) usernameToUserId;
     /**
@@ -34,7 +48,8 @@ abstract contract UserData {
     struct User {
         string username;
         string infoHash;
-        string presenter;
+        string referral;
+        uint256 dappId;
     }
 
     mapping(uint256 => User) users;
@@ -46,16 +61,24 @@ abstract contract UserData {
         uint256 _userId, 
         string memory _username, 
         string memory _infoHash,
-        string memory _presenter
+        string memory _referral,
+        uint256 _dappId
     ) internal {
+        require(bytes(_username).length > 0, "empty username");
+        require(_username.isLiteral(), "you can just use numbers(0-9) letters(a-zA-Z) and signs(-._)");
+
         _takeUsername(_username, _userId);
-        users[_userId] = User(_username, _infoHash, _presenter);
-        emit NewUser(_userId, _username, _infoHash, _presenter);
+
+        //concate @polygon at the end of username on the polygon chain
+        _username = _username.append("@polygon");
+        
+        users[_userId] = User(_username, _infoHash, _referral, _dappId);
+        emit NewUser(_userId, _username, _infoHash, _referral, _dappId);
     }
     /**
      * @dev emit when a new user signs in.
      */
-    event NewUser(uint256 _userId, string _username, string _infoHash, string _presenter);
+    event NewUser(uint256 _userId, string _username, string _infoHash, string _referral, uint256 _dappId);
     /**
      * @dev User profile is visible using `_userId` or `_username`.
      */ 
