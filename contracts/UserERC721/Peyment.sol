@@ -12,12 +12,16 @@ pragma solidity ^0.8.7;
 //   ============== Verify Random Function by ChainLink ===============
 
 
+import "../ERC721/ERC721UncollectibleUpgradeable.sol";
 import "../ContData/ContDataCall.sol";
+import "../utils/SafeMath.sol";
 
 
-abstract contract Peyment is ContDataCall {
+abstract contract Peyment is ContDataCall, ERC721UncollectibleUpgradeable {
 
-    mapping(address => uint256) pendingWithdrawals;
+    using SafeMath for uint256;
+
+    mapping(uint256 => uint256) pendingWithdrawals;
 
     /**
      * @dev checks the username fee and shares it to some addresses.
@@ -30,9 +34,9 @@ abstract contract Peyment is ContDataCall {
      */
     function _registerPayment(
         string memory username,
-        address referral,
-        address dapp,
-        address DAO
+        uint256 referral,
+        uint256 dapp,
+        uint256 DAO
     ) internal {
 
         uint256 amount = msg.value;
@@ -44,7 +48,7 @@ abstract contract Peyment is ContDataCall {
 
         deposit(referral, refBon);
         deposit(dapp, dappBon);
-        deposit(DAO, amount-(refBon + dappBon));
+        deposit(DAO, amount.sub(refBon + dappBon));
     }
 
 
@@ -65,15 +69,15 @@ abstract contract Peyment is ContDataCall {
     /**
      * @dev Deposit the `amount` in wei to the `addr` in pendeingwithdrawals;
      */
-    function deposit(address addr, uint256 amount) internal {
-        pendingWithdrawals[addr] += amount;
+    function deposit(uint256 userId, uint256 amount) internal {
+        pendingWithdrawals[userId] = pendingWithdrawals[userId].add(amount);
     }
 
     /**
      * @dev returns balance of the `addr` in wei;
      */
-    function balanceInWei(address addr) public view returns(uint256) {
-        return pendingWithdrawals[addr];
+    function balanceInWei(uint256 userId) public view returns(uint256) {
+        return pendingWithdrawals[userId];
     }
 
     /**
@@ -81,8 +85,9 @@ abstract contract Peyment is ContDataCall {
      */
     function withdraw() public {
         address payable receiver = payable(msg.sender);
-        uint amount = balanceInWei(receiver);
-        pendingWithdrawals[receiver] = 0;
+        uint256 IdCard = tokenOf(receiver);
+        uint amount = balanceInWei(IdCard);
+        pendingWithdrawals[IdCard] = 0;
         receiver.transfer(amount);
     }
 }

@@ -15,9 +15,8 @@ import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./IdCard.sol";
 import "./UserData.sol";
-import "./Peyment.sol";
 
-contract Register is IdCard, UserData, Peyment {
+contract Register is IdCard, UserData {
     using CountersUpgradeable for CountersUpgradeable.Counter;
     CountersUpgradeable.Counter private _userIdCounter;
 
@@ -33,7 +32,10 @@ contract Register is IdCard, UserData, Peyment {
     }
 
 
-
+    function usernamePrice(string memory _username) external view returns(uint256) {
+        require(!registered(_username), "This username has been taken before");
+        return registerFee(_username);
+    }
 
     /**
      * @dev Sign in the Register contract by adopting a `username` and optional info.
@@ -56,9 +58,9 @@ contract Register is IdCard, UserData, Peyment {
     ) external payable {
         _registerPayment(
             username, 
-            ownerOf(userId(referral)), 
-            ownerOf(dappId), 
-            owner()
+            userId(referral), 
+            dappId, 
+            0
         );
 
         _userIdCounter.increment();
