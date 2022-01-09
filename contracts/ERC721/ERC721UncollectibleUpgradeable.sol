@@ -30,27 +30,27 @@ abstract contract ERC721UncollectibleUpgradeable is Initializable, ContextUpgrad
     }
 
     /**
-     * @dev Returns true if `addr` has a token.
+     * @dev Returns true if `owner` has a token.
      */
-    function ownsToken(address addr)public view returns(bool){
-        return(balanceOf(addr) != 0);
+    function ownsToken(address owner)public view returns(bool){
+        return(balanceOf(owner) != 0);
     }
 
 
     mapping(address => uint256) addrToTokenId;
 
     /**
-     * @dev Returns the tokenId of the `addr`.
+     * @dev Returns the tokenId of the `owner`.
      * 
      * since every owner can just have one token, we can get the tokenId if we have the owner address.
      * 
      * Requirements:
      *
-     * - `addr` should own a token.
+     * - `owner` should own a token.
      */
-    function tokenOf(address addr) public view returns(uint256) {
-        require(ownsToken(addr), "ERC721UncollectibleUpgradeable: this address does not have a token");
-        return addrToTokenId[addr];
+    function tokenOf(address owner) public view returns(uint256) {
+        require(ownsToken(owner), "ERC721UncollectibleUpgradeable: this address does not have a token");
+        return addrToTokenId[owner];
     }
 
 
